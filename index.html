@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101014">
+<title>CineVerse | Discover Movies & Series</title>
+<meta name="description" content="Discover movies, television series and trending entertainment on CineVerse.">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #101014;
+  color: #f5f5f7;
+  font-family: Arial, sans-serif;
+  padding-bottom: 75px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 5%;
+  background: #15151c;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.logo span { color: #9b72ff; }
+
+.search {
+  width: 45%;
+  max-width: 350px;
+  padding: 11px;
+  border: 1px solid #33333d;
+  border-radius: 20px;
+  background: #22222b;
+  color: white;
+  outline: none;
+}
+
+.hero {
+  padding: 65px 6%;
+  background: linear-gradient(90deg, #191524, #29203c);
+  min-height: 260px;
+}
+
+.hero h1 {
+  font-size: clamp(30px, 7vw, 48px);
+  max-width: 500px;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  color: #c2bdce;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.hero button {
+  background: #9167ff;
+  color: white;
+  border: 0;
+  border-radius: 7px;
+  padding: 12px 22px;
+  font-weight: bold;
+}
+
+section { padding: 25px 5%; }
+
+.section-title {
+  font-size: 21px;
+  margin-bottom: 17px;
+}
+
+.categories {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.category {
+  flex-shrink: 0;
+  padding: 10px 17px;
+  background: #24242d;
+  color: white;
+  border: 1px solid #383843;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.category.active {
+  background: #9167ff;
+  border-color: #9167ff;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 12px;
+}
+
+.movie-card { min-width: 0; }
+
+.poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  background: linear-gradient(145deg, #35264f, #15151c);
+  position: relative;
+}
+
+.poster small {
+  position: absolute;
+  bottom: 10px;
+  font-size: 10px;
+  color: #ded5ff;
+}
+
+.movie-card h3 {
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.movie-card p {
+  color: #9999a8;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.card-actions button {
+  flex: 1;
+  padding: 8px 3px;
+  border-radius: 6px;
+  border: 1px solid #41414e;
+  background: #24242d;
+  color: white;
+  font-size: 11px;
+}
+
+.card-actions button.saved {
+  background: #4a337c;
+  border-color: #9167ff;
+}
+
+.empty {
+  color: #9999a8;
+  font-size: 13px;
+  padding: 10px 0;
+  line-height: 1.6;
+}
+
+.progress {
+  height: 4px;
+  background: #33333d;
+  margin-top: 8px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress div {
+  height: 100%;
+  background: #9167ff;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #191920;
+  border-top: 1px solid #33333d;
+  display: flex;
+  justify-content: space-around;
+  padding: 13px 5px;
+  z-index: 10;
+}
+
+.bottom-nav a {
+  color: #b9b9c6;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+footer {
+  text-align: center;
+  color: #777784;
+  padding: 30px 10px;
+  font-size: 12px;
+}
+
+@media (min-width: 700px) {
+  .movie-grid { grid-template-columns: repeat(4, 1fr); }
+  .hero { padding: 85px 8%; }
+}
+
+@media (min-width: 1000px) {
+  .movie-grid { grid-template-columns: repeat(6, 1fr); }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">CINE<span>VERSE</span></div>
+  <input class="search" id="search"
+    placeholder="Search movies..."
+    oninput="render()">
+</header>
+
+<div class="hero">
+  <h1>Discover Your Next Favourite.</h1>
+  <p>Explore movies, television series and trending entertainment.</p>
+  <button onclick="document.getElementById('catalogue').scrollIntoView({behavior:'smooth'})">
+    Explore Now
+  </button>
+</div>
+
+<section>
+  <h2 class="section-title">Browse Categories</h2>
+  <div class="categories">
+    <button class="category active" onclick="setFilter('all',this)">All</button>
+    <button class="category" onclick="setFilter('movie',this)">Movies</button>
+    <button class="category" onclick="setFilter('series',this)">TV Shows</button>
+  </div>
+</section>
+
+<section id="catalogue">
+  <h2 class="section-title">Trending Now</h2>
+  <div class="movie-grid" id="movieGrid"></div>
+</section>
+
+<section id="watchlist">
+  <h2 class="section-title">My Watchlist</h2>
+  <div class="movie-grid" id="watchGrid"></div>
+</section>
+
+<section id="continue">
+  <h2 class="section-title">Continue Watching</h2>
+  <div class="movie-grid" id="continueGrid"></div>
+</section>
+
+<footer>
+  <p>© 2026 CineVerse. All rights reserved.</p>
+  <p style="margin-top:8px">Movie discovery and entertainment information.</p>
+</footer>
+
+<nav class="bottom-nav">
+  <a href="#">Home</a>
+  <a href="#catalogue">Explore</a>
+  <a href="#watchlist">Watchlist</a>
+  <a href="#continue">History</a>
+</nav>
+
+<script>
+const movies = [
+  {id:1,title:"The Last Horizon",type:"movie",year:2026,genre:"Adventure",color:"#48365d"},
+  {id:2,title:"Midnight City",type:"movie",year:2025,genre:"Thriller",color:"#263d57"},
+  {id:3,title:"Beyond Time",type:"movie",year:2026,genre:"Sci-Fi",color:"#40516c"},
+  {id:4,title:"Hidden Truths",type:"series",year:2025,genre:"Mystery",color:"#633b49"},
+  {id:5,title:"The Dark Kingdom",type:"series",year:2026,genre:"Fantasy",color:"#44365e"},
+  {id:6,title:"Summer Memories",type:"movie",year:2025,genre:"Romance",color:"#79505b"},
+  {id:7,title:"Final Pursuit",type:"movie",year:2026,genre:"Action",color:"#65442e"},
+  {id:8,title:"The Silent Room",type:"series",year:2025,genre:"Drama",color:"#34504b"}
+];
+
+let filter = "all";
+
+function getSaved(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch(e) { return []; }
+}
+
+function save(key,data) {
+  localStorage.setItem(key,JSON.stringify(data));
+}
+
+function card(m,extra="") {
+  const watch = getSaved("cine_watchlist");
+  const saved = watch.includes(m.id);
+
+  return `
+    <div class="movie-card">
+      <div class="poster" style="background:linear-gradient(145deg,${m.color},#15151c)">
+        ${m.title}
+        <small>CINEVERSE ORIGINAL DEMO</small>
+      </div>
+      <h3>${m.title}</h3>
+      <p>${m.type==="movie"?"Movie":"TV Show"} · ${m.year} · ${m.genre}</p>
+      ${extra}
+      <div class="card-actions">
+        <button class="${saved?"saved":""}" onclick="toggleWatch(${m.id})">
+          ${saved?"✓ Saved":"+ Watchlist"}
+        </button>
+        <button onclick="startWatching(${m.id})">Start</button>
+      </div>
+    </div>`;
+}
+
+function render() {
+  const query = document.getElementById("search").value.toLowerCase();
+
+  const filtered = movies.filter(m =>
+    (filter==="all" || m.type===filter) &&
+    (m.title.toLowerCase().includes(query) ||
+     m.genre.toLowerCase().includes(query))
+  );
+
+  document.getElementById("movieGrid").innerHTML =
+    filtered.length ? filtered.map(m=>card(m)).join("") :
+    '<p class="empty">No matching titles found.</p>';
+
+  const watch = getSaved("cine_watchlist");
+  const watchMovies = movies.filter(m=>watch.includes(m.id));
+
+  document.getElementById("watchGrid").innerHTML =
+    watchMovies.length ? watchMovies.map(m=>card(m)).join("") :
+    '<p class="empty">Your watchlist is empty. Save a title to see it here.</p>';
+
+  const progress = getSaved("cine_progress");
+
+  document.getElementById("continueGrid").innerHTML =
+    progress.length ? progress.map(p=>{
+      const m=movies.find(x=>x.id===p.id);
+      if(!m) return "";
+      return card(m,`
+        <div class="progress">
+          <div style="width:${p.percent}%"></div>
+        </div>
+        <p>${p.percent}% progress · Demo only</p>
+      `);
+    }).join("") :
+    '<p class="empty">Nothing here yet. Try the Start button on a title.</p>';
+}
+
+function setFilter(value,button) {
+  filter=value;
+  document.querySelectorAll(".category").forEach(b=>b.classList.remove("active"));
+  button.classList.add("active");
+  render();
+}
+
+function toggleWatch(id) {
+  let watch=getSaved("cine_watchlist");
+  watch=watch.includes(id)?watch.filter(x=>x!==id):[...watch,id];
+  save("cine_watchlist",watch);
+  render();
+}
+
+function startWatching(id) {
+  let progress=getSaved("cine_progress");
+  let item=progress.find(p=>p.id===id);
+
+  if(item) {
+    item.percent=Math.min(item.percent+10,90);
+  } else {
+    progress.push({id:id,percent:10});
+  }
+
+  save("cine_progress",progress);
+  render();
+  alert("Demo progress saved on this device.");
+}
+
+render();
+</script>
+
+</body>
+</html>
