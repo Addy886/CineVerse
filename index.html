@@ -1,393 +1,146 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#101014">
-<title>CineVerse | Discover Movies & Series</title>
-<meta name="description" content="Discover movies, television series and trending entertainment on CineVerse.">
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090b12">
+<title>CineVerse — Watch Demo</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: #101014;
-  color: #f5f5f7;
-  font-family: Arial, sans-serif;
-  padding-bottom: 75px;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 5%;
-  background: #15151c;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.logo {
-  font-size: 23px;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-
-.logo span { color: #9b72ff; }
-
-.search {
-  width: 45%;
-  max-width: 350px;
-  padding: 11px;
-  border: 1px solid #33333d;
-  border-radius: 20px;
-  background: #22222b;
-  color: white;
-  outline: none;
-}
-
-.hero {
-  padding: 65px 6%;
-  background: linear-gradient(90deg, #191524, #29203c);
-  min-height: 260px;
-}
-
-.hero h1 {
-  font-size: clamp(30px, 7vw, 48px);
-  max-width: 500px;
-  margin-bottom: 12px;
-}
-
-.hero p {
-  color: #c2bdce;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-.hero button {
-  background: #9167ff;
-  color: white;
-  border: 0;
-  border-radius: 7px;
-  padding: 12px 22px;
-  font-weight: bold;
-}
-
-section { padding: 25px 5%; }
-
-.section-title {
-  font-size: 21px;
-  margin-bottom: 17px;
-}
-
-.categories {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-}
-
-.category {
-  flex-shrink: 0;
-  padding: 10px 17px;
-  background: #24242d;
-  color: white;
-  border: 1px solid #383843;
-  border-radius: 20px;
-  cursor: pointer;
-}
-
-.category.active {
-  background: #9167ff;
-  border-color: #9167ff;
-}
-
-.movie-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px 12px;
-}
-
-.movie-card { min-width: 0; }
-
-.poster {
-  width: 100%;
-  aspect-ratio: 2 / 3;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-  background: linear-gradient(145deg, #35264f, #15151c);
-  position: relative;
-}
-
-.poster small {
-  position: absolute;
-  bottom: 10px;
-  font-size: 10px;
-  color: #ded5ff;
-}
-
-.movie-card h3 {
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.movie-card p {
-  color: #9999a8;
-  font-size: 12px;
-  margin-top: 5px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.card-actions button {
-  flex: 1;
-  padding: 8px 3px;
-  border-radius: 6px;
-  border: 1px solid #41414e;
-  background: #24242d;
-  color: white;
-  font-size: 11px;
-}
-
-.card-actions button.saved {
-  background: #4a337c;
-  border-color: #9167ff;
-}
-
-.empty {
-  color: #9999a8;
-  font-size: 13px;
-  padding: 10px 0;
-  line-height: 1.6;
-}
-
-.progress {
-  height: 4px;
-  background: #33333d;
-  margin-top: 8px;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.progress div {
-  height: 100%;
-  background: #9167ff;
-}
-
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #191920;
-  border-top: 1px solid #33333d;
-  display: flex;
-  justify-content: space-around;
-  padding: 13px 5px;
-  z-index: 10;
-}
-
-.bottom-nav a {
-  color: #b9b9c6;
-  text-decoration: none;
-  font-size: 12px;
-}
-
-footer {
-  text-align: center;
-  color: #777784;
-  padding: 30px 10px;
-  font-size: 12px;
-}
-
-@media (min-width: 700px) {
-  .movie-grid { grid-template-columns: repeat(4, 1fr); }
-  .hero { padding: 85px 8%; }
-}
-
-@media (min-width: 1000px) {
-  .movie-grid { grid-template-columns: repeat(6, 1fr); }
-}
+:root{--bg:#090b12;--panel:#141925;--panel2:#1b2332;--text:#f4f6fb;--muted:#9ca8bb;--accent:#8b5cf6;--line:#293244}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{height:68px;padding:0 clamp(16px,4vw,56px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:#090b12ed;backdrop-filter:blur(12px);z-index:5}
+.logo{font-size:23px;font-weight:850;letter-spacing:-1px}.logo span{color:#a78bfa}
+nav{display:flex;gap:20px}nav a{color:var(--muted);text-decoration:none}nav a:hover{color:white}
+main{max-width:1180px;margin:auto;padding:28px clamp(16px,4vw,40px) 70px}
+.hero{padding:clamp(24px,5vw,52px);border:1px solid var(--line);border-radius:22px;background:radial-gradient(circle at 85% 20%,#6043a866,transparent 35%),linear-gradient(120deg,#1b2232,#10131e);margin-bottom:34px}
+.eyebrow{color:#c4b5fd;text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:800}.hero h1{font-size:clamp(32px,6vw,56px);line-height:1.05;max-width:700px;margin:12px 0}.hero p{max-width:650px;color:#c1c9d7}.pill{display:inline-block;background:#ffffff12;border:1px solid #ffffff20;border-radius:99px;padding:5px 10px;color:#ddd6fe;font-size:12px}
+button,select{font:inherit}button{border:0;border-radius:10px;background:var(--accent);color:white;padding:10px 15px;font-weight:700;cursor:pointer}button.secondary{background:var(--panel2);border:1px solid var(--line)}button:disabled{opacity:.4;cursor:not-allowed}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:30px 0 14px}.section-head h2{font-size:21px;margin:0}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden}
+.poster{height:140px;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:radial-gradient(circle at 25% 20%,#8b5cf677,transparent 40%),linear-gradient(135deg,#26364d,#111722);font-size:20px;font-weight:850}
+.card-body{padding:14px}.card h3{margin:0 0 4px;font-size:16px}.card p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.progress{height:4px;background:#30394a;border-radius:10px;overflow:hidden;margin:8px 0}.progress i{display:block;height:100%;background:#a78bfa}
+.empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--muted);font-size:12px}
+.modal{display:none;position:fixed;inset:0;background:#03050bf2;z-index:20;overflow:auto;padding:18px}.modal.open{display:block}
+.player-shell{max-width:1050px;margin:2vh auto;background:#101521;border:1px solid #30394a;border-radius:16px;overflow:hidden}
+.player-top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;gap:10px}.player-top strong{font-size:16px}.close{background:#293244}
+.video-wrap{position:relative;background:#000;aspect-ratio:16/9;display:flex;align-items:center}
+video{width:100%;height:100%;max-height:68vh;display:block;background:#000}
+.controls{padding:12px 15px 15px;background:#101521}
+.seek{width:100%;accent-color:#a78bfa;cursor:pointer}.control-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.control-row button{padding:8px 12px}.control-row select{background:#202a3a;color:white;border:1px solid #39465c;border-radius:8px;padding:8px;max-width:100%}
+.time{font-variant-numeric:tabular-nums;color:#cbd5e1;font-size:12px}.spacer{flex:1}
+.player-meta{padding:14px 16px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.player-meta h3{font-size:14px;margin:0 0 8px}.episode-list{display:flex;gap:8px;flex-wrap:wrap}.episode-list button{background:#263247;border:1px solid #3b4961}.episode-list button.active{background:#6d4bc3}
+.note{font-size:12px;color:#aab5c7;margin:12px 0 0}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#263247;color:white;padding:10px 16px;border-radius:10px;display:none;z-index:30}
+@media(max-width:650px){header{height:58px}nav{gap:12px;font-size:13px}.logo{font-size:20px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.poster{height:115px;font-size:17px}.card-body{padding:10px}.player-meta{grid-template-columns:1fr}.modal{padding:0}.player-shell{margin:0;min-height:100vh;border-radius:0;border:0}.player-top{padding:12px}.video-wrap{aspect-ratio:16/9}.controls{padding:10px}.control-row{gap:7px}.control-row button,.control-row select{font-size:12px;padding:8px}.control-row .spacer{display:none}}
 </style>
 </head>
-
 <body>
-
-<header>
-  <div class="logo">CINE<span>VERSE</span></div>
-  <input class="search" id="search"
-    placeholder="Search movies..."
-    oninput="render()">
-</header>
-
-<div class="hero">
-  <h1>Discover Your Next Favourite.</h1>
-  <p>Explore movies, television series and trending entertainment.</p>
-  <button onclick="document.getElementById('catalogue').scrollIntoView({behavior:'smooth'})">
-    Explore Now
-  </button>
-</div>
-
-<section>
-  <h2 class="section-title">Browse Categories</h2>
-  <div class="categories">
-    <button class="category active" onclick="setFilter('all',this)">All</button>
-    <button class="category" onclick="setFilter('movie',this)">Movies</button>
-    <button class="category" onclick="setFilter('series',this)">TV Shows</button>
-  </div>
+<header><div class="logo">CINE<span>VERSE</span></div><nav><a href="#catalogue">Browse</a><a href="#continue">Continue Watching</a></nav></header>
+<main>
+<section class="hero">
+ <span class="eyebrow">Your screen. Your story.</span>
+ <h1>Discover your next watch.</h1>
+ <p>A working CineVerse playback demo. Try adaptive video quality, playback controls, saved progress and episode navigation using a licensed sample stream.</p>
+ <span class="pill">PLAYER DEMO · NOT A COMMERCIAL MOVIE LIBRARY</span>
 </section>
-
-<section id="catalogue">
-  <h2 class="section-title">Trending Now</h2>
-  <div class="movie-grid" id="movieGrid"></div>
-</section>
-
-<section id="watchlist">
-  <h2 class="section-title">My Watchlist</h2>
-  <div class="movie-grid" id="watchGrid"></div>
-</section>
-
 <section id="continue">
-  <h2 class="section-title">Continue Watching</h2>
-  <div class="movie-grid" id="continueGrid"></div>
+ <div class="section-head"><h2>Continue Watching</h2><span class="muted" id="continueCount">0 titles</span></div>
+ <div class="grid" id="continueGrid"><div class="empty">Your viewing progress will appear here after you play a video.</div></div>
 </section>
+<section id="catalogue">
+ <div class="section-head"><h2>Movies</h2><span class="muted">Sample content</span></div>
+ <div class="grid">
+  <article class="card"><div class="poster">BIG BUCK<br>BUNNY</div><div class="card-body"><h3>Big Buck Bunny</h3><p>Animated short · Sample movie</p><button onclick="openPlayer('movie')">Watch demo</button></div></article>
+ </div>
+ <div class="section-head"><h2>TV Shows</h2><span class="muted">Episode navigation demo</span></div>
+ <div class="grid">
+  <article class="card"><div class="poster">CINEVERSE<br>TEST SERIES</div><div class="card-body"><h3>CineVerse Test Series</h3><p>Demo series · 1 season · 3 episodes</p><button onclick="openPlayer('series',0)">Watch episodes</button></div></article>
+ </div>
+</section>
+<p class="note">This demo uses the public Mux HLS test stream featuring Big Buck Bunny, an animated film by the Blender Foundation licensed under Creative Commons Attribution 3.0. The stream is hosted externally and is for player testing, not a guaranteed production source.</p>
+</main>
+<footer>CineVerse · Playback prototype · Use only video content you own or are licensed to distribute.</footer>
 
-<footer>
-  <p>© 2026 CineVerse. All rights reserved.</p>
-  <p style="margin-top:8px">Movie discovery and entertainment information.</p>
-</footer>
-
-<nav class="bottom-nav">
-  <a href="#">Home</a>
-  <a href="#catalogue">Explore</a>
-  <a href="#watchlist">Watchlist</a>
-  <a href="#continue">History</a>
-</nav>
-
+<div class="modal" id="playerModal" role="dialog" aria-modal="true" aria-label="Video player">
+ <div class="player-shell">
+  <div class="player-top"><strong id="playerTitle">Now playing</strong><button class="close" onclick="closePlayer()">Close ✕</button></div>
+  <div class="video-wrap" id="videoWrap"><video id="video" playsinline preload="metadata"></video></div>
+  <div class="controls">
+   <input class="seek" id="seek" type="range" min="0" max="1000" value="0" aria-label="Video progress">
+   <div class="control-row">
+    <button id="playBtn" onclick="togglePlay()">▶ Play</button>
+    <span class="time" id="timeLabel">0:00 / 0:00</span>
+    <div class="spacer"></div>
+    <button class="secondary" onclick="skip(-10)">−10s</button><button class="secondary" onclick="skip(10)">+10s</button>
+    <label class="time">Volume <input id="volume" type="range" min="0" max="1" step="0.05" value="1" style="width:76px;vertical-align:middle"></label>
+    <button class="secondary" id="muteBtn" onclick="toggleMute()">Mute</button>
+    <select id="quality" aria-label="Video quality"><option value="-1">Auto quality</option></select>
+    <button class="secondary" onclick="toggleFullscreen()">Full screen</button>
+   </div>
+  </div>
+  <div class="player-meta">
+   <div><h3>Season and episodes</h3><div id="episodePicker" class="episode-list"><span class="muted">Movie playback</span></div></div>
+   <div><h3>Playback information</h3><div class="muted" id="playbackInfo">Loading stream…</div><p class="note">Progress is saved in this browser on this device. It is not synced between devices or accounts.</p></div>
+  </div>
+ </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 <script>
-const movies = [
-  {id:1,title:"The Last Horizon",type:"movie",year:2026,genre:"Adventure",color:"#48365d"},
-  {id:2,title:"Midnight City",type:"movie",year:2025,genre:"Thriller",color:"#263d57"},
-  {id:3,title:"Beyond Time",type:"movie",year:2026,genre:"Sci-Fi",color:"#40516c"},
-  {id:4,title:"Hidden Truths",type:"series",year:2025,genre:"Mystery",color:"#633b49"},
-  {id:5,title:"The Dark Kingdom",type:"series",year:2026,genre:"Fantasy",color:"#44365e"},
-  {id:6,title:"Summer Memories",type:"movie",year:2025,genre:"Romance",color:"#79505b"},
-  {id:7,title:"Final Pursuit",type:"movie",year:2026,genre:"Action",color:"#65442e"},
-  {id:8,title:"The Silent Room",type:"series",year:2025,genre:"Drama",color:"#34504b"}
+const DEMO_STREAM='https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+const seriesEpisodes=[
+ {title:'Episode 1 — The Beginning',src:DEMO_STREAM},
+ {title:'Episode 2 — The Journey',src:DEMO_STREAM},
+ {title:'Episode 3 — The Finale',src:DEMO_STREAM}
 ];
-
-let filter = "all";
-
-function getSaved(key) {
-  try { return JSON.parse(localStorage.getItem(key)) || []; }
-  catch(e) { return []; }
+const video=document.getElementById('video'), modal=document.getElementById('playerModal');
+let hls=null,currentType='movie',episodeIndex=0,activeKey='movie',levels=[];
+const storeKey='cineverse_demo_progress_v1';
+function readProgress(){try{return JSON.parse(localStorage.getItem(storeKey)||'{}')}catch(e){return {}}}
+function writeProgress(data){localStorage.setItem(storeKey,JSON.stringify(data))}
+function keyFor(){return currentType==='series'?'series-'+episodeIndex:'movie'}
+function currentSource(){return currentType==='series'?seriesEpisodes[episodeIndex]:{title:'Big Buck Bunny',src:DEMO_STREAM}}
+function fmt(s){if(!Number.isFinite(s))return '0:00';let h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=Math.floor(s%60);return h?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`}
+function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2200)}
+function destroyStream(){if(hls){hls.destroy();hls=null}video.pause();video.removeAttribute('src');video.load()}
+function openPlayer(type,index=0){currentType=type;episodeIndex=index;modal.classList.add('open');document.body.style.overflow='hidden';loadCurrent(true)}
+function closePlayer(){saveProgress();destroyStream();modal.classList.remove('open');document.body.style.overflow='';renderContinue()}
+function loadCurrent(resume=true){
+ const item=currentSource();activeKey=keyFor();document.getElementById('playerTitle').textContent=item.title;
+ document.getElementById('playbackInfo').textContent='Connecting to public adaptive HLS sample…';
+ document.getElementById('episodePicker').innerHTML=currentType==='series'?seriesEpisodes.map((ep,i)=>`<button class="${i===episodeIndex?'active':''}" onclick="selectEpisode(${i})">${i+1}</button>`).join(''):'<span class="muted">Movie playback</span>';
+ document.getElementById('quality').innerHTML='<option value="-1">Auto quality</option>';
+ destroyStream();levels=[];
+ if(window.Hls&&Hls.isSupported()){
+  hls=new Hls({capLevelToPlayerSize:true});hls.loadSource(item.src);hls.attachMedia(video);
+  hls.on(Hls.Events.MANIFEST_PARSED,(_,data)=>{levels=data.levels||[];populateQuality();document.getElementById('playbackInfo').textContent=`HLS stream ready · ${levels.length} available quality levels · Adaptive playback supported`;restorePosition(resume);});
+  hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal){document.getElementById('playbackInfo').textContent='The sample stream could not be loaded. Check your connection or try again later.';toast('Video stream error');}});
+ }else if(video.canPlayType('application/vnd.apple.mpegurl')){
+  video.src=item.src;video.addEventListener('loadedmetadata',function once(){video.removeEventListener('loadedmetadata',once);document.getElementById('playbackInfo').textContent='Native HLS playback · Quality selection is managed by your device/browser';restorePosition(resume);});
+ }else{document.getElementById('playbackInfo').textContent='This browser does not support HLS playback.';}
 }
-
-function save(key,data) {
-  localStorage.setItem(key,JSON.stringify(data));
-}
-
-function card(m,extra="") {
-  const watch = getSaved("cine_watchlist");
-  const saved = watch.includes(m.id);
-
-  return `
-    <div class="movie-card">
-      <div class="poster" style="background:linear-gradient(145deg,${m.color},#15151c)">
-        ${m.title}
-        <small>CINEVERSE ORIGINAL DEMO</small>
-      </div>
-      <h3>${m.title}</h3>
-      <p>${m.type==="movie"?"Movie":"TV Show"} · ${m.year} · ${m.genre}</p>
-      ${extra}
-      <div class="card-actions">
-        <button class="${saved?"saved":""}" onclick="toggleWatch(${m.id})">
-          ${saved?"✓ Saved":"+ Watchlist"}
-        </button>
-        <button onclick="startWatching(${m.id})">Start</button>
-      </div>
-    </div>`;
-}
-
-function render() {
-  const query = document.getElementById("search").value.toLowerCase();
-
-  const filtered = movies.filter(m =>
-    (filter==="all" || m.type===filter) &&
-    (m.title.toLowerCase().includes(query) ||
-     m.genre.toLowerCase().includes(query))
-  );
-
-  document.getElementById("movieGrid").innerHTML =
-    filtered.length ? filtered.map(m=>card(m)).join("") :
-    '<p class="empty">No matching titles found.</p>';
-
-  const watch = getSaved("cine_watchlist");
-  const watchMovies = movies.filter(m=>watch.includes(m.id));
-
-  document.getElementById("watchGrid").innerHTML =
-    watchMovies.length ? watchMovies.map(m=>card(m)).join("") :
-    '<p class="empty">Your watchlist is empty. Save a title to see it here.</p>';
-
-  const progress = getSaved("cine_progress");
-
-  document.getElementById("continueGrid").innerHTML =
-    progress.length ? progress.map(p=>{
-      const m=movies.find(x=>x.id===p.id);
-      if(!m) return "";
-      return card(m,`
-        <div class="progress">
-          <div style="width:${p.percent}%"></div>
-        </div>
-        <p>${p.percent}% progress · Demo only</p>
-      `);
-    }).join("") :
-    '<p class="empty">Nothing here yet. Try the Start button on a title.</p>';
-}
-
-function setFilter(value,button) {
-  filter=value;
-  document.querySelectorAll(".category").forEach(b=>b.classList.remove("active"));
-  button.classList.add("active");
-  render();
-}
-
-function toggleWatch(id) {
-  let watch=getSaved("cine_watchlist");
-  watch=watch.includes(id)?watch.filter(x=>x!==id):[...watch,id];
-  save("cine_watchlist",watch);
-  render();
-}
-
-function startWatching(id) {
-  let progress=getSaved("cine_progress");
-  let item=progress.find(p=>p.id===id);
-
-  if(item) {
-    item.percent=Math.min(item.percent+10,90);
-  } else {
-    progress.push({id:id,percent:10});
-  }
-
-  save("cine_progress",progress);
-  render();
-  alert("Demo progress saved on this device.");
-}
-
-render();
+function populateQuality(){let q=document.getElementById('quality');q.innerHTML='<option value="-1">Auto quality</option>';levels.forEach((l,i)=>{let opt=document.createElement('option');opt.value=i;opt.textContent=(l.height||'?')+'p';q.appendChild(opt)});q.value='-1'}
+document.getElementById('quality').addEventListener('change',e=>{if(hls){hls.currentLevel=Number(e.target.value);toast(e.target.value==='-1'?'Adaptive quality enabled':'Quality set to '+(levels[Number(e.target.value)]?.height||'selected')+'p')}else{toast('Manual quality is not exposed by this browser for this stream')}})
+function restorePosition(resume){let p=readProgress()[activeKey];if(resume&&p&&p.time>5){video.currentTime=p.time;toast('Resumed from '+fmt(p.time))}video.play().then(()=>{}).catch(()=>{document.getElementById('playBtn').textContent='▶ Play';});}
+function togglePlay(){if(video.paused){video.play().catch(()=>toast('Tap play again to start playback'))}else video.pause()}
+video.addEventListener('play',()=>document.getElementById('playBtn').textContent='❚❚ Pause');
+video.addEventListener('pause',()=>document.getElementById('playBtn').textContent='▶ Play');
+video.addEventListener('timeupdate',()=>{let d=video.duration||0,t=video.currentTime||0;document.getElementById('seek').value=d?Math.round(t/d*1000):0;document.getElementById('timeLabel').textContent=fmt(t)+' / '+fmt(d);if(Math.floor(t)%5===0)saveProgress(false)});
+document.getElementById('seek').addEventListener('input',e=>{if(video.duration)video.currentTime=Number(e.target.value)/1000*video.duration});
+document.getElementById('volume').addEventListener('input',e=>{video.volume=Number(e.target.value);video.muted=video.volume===0});
+function toggleMute(){video.muted=!video.muted;document.getElementById('muteBtn').textContent=video.muted?'Unmute':'Mute'}
+function skip(n){if(Number.isFinite(video.duration))video.currentTime=Math.max(0,Math.min(video.duration,video.currentTime+n))}
+function toggleFullscreen(){let el=document.getElementById('videoWrap');if(document.fullscreenElement){document.exitFullscreen?.()}else if(el.requestFullscreen){el.requestFullscreen().catch(()=>toast('Full screen unavailable in this browser'))}else if(video.webkitEnterFullscreen){video.webkitEnterFullscreen()}else{toast('Full screen is not supported here')}}
+function saveProgress(render=true){if(!video.duration||!Number.isFinite(video.currentTime))return;let data=readProgress();if(video.currentTime>video.duration-5){delete data[activeKey]}else if(video.currentTime>2){data[activeKey]={type:currentType,title:currentSource().title,time:video.currentTime,duration:video.duration,updated:Date.now(),episode:episodeIndex}}writeProgress(data);if(render)renderContinue()}
+function selectEpisode(i){saveProgress(false);episodeIndex=i;loadCurrent(false)}
+video.addEventListener('ended',()=>{if(currentType==='series'&&episodeIndex<seriesEpisodes.length-1){episodeIndex++;loadCurrent(false);toast('Playing next episode')}else{saveProgress();toast('Playback finished')}});
+function renderContinue(){let data=readProgress(),items=Object.entries(data).sort((a,b)=>b[1].updated-a[1].updated),grid=document.getElementById('continueGrid');document.getElementById('continueCount').textContent=items.length+' titles';if(!items.length){grid.innerHTML='<div class="empty">Your viewing progress will appear here after you play a video.</div>';return}grid.innerHTML=items.map(([key,p])=>`<article class="card"><div class="poster">${p.type==='series'?'TEST SERIES':'BIG BUCK BUNNY'}</div><div class="card-body"><h3>${p.title}</h3><p>${fmt(p.time)} watched · ${Math.round(p.time/(p.duration||1)*100)}%</p><div class="progress"><i style="width:${Math.min(100,p.time/(p.duration||1)*100)}%"></i></div><button onclick="${p.type==='series'?`openPlayer('series',${p.episode||0})`:`openPlayer('movie')`}">Resume</button></div></article>`).join('')}
+window.addEventListener('beforeunload',()=>saveProgress(false));renderContinue();
 </script>
-
 </body>
 </html>
