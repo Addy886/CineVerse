@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#090b12">
 <title>CineVerse — Watch Demo</title>
 <style>
 :root{--bg:#090b12;--panel:#141925;--panel2:#1b2332;--text:#f4f6fb;--muted:#9ca8bb;--accent:#8b5cf6;--line:#293244}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 header{height:68px;padding:0 clamp(16px,4vw,56px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:#090b12ed;backdrop-filter:blur(12px);z-index:5}
 .logo{font-size:23px;font-weight:850;letter-spacing:-1px}.logo span{color:#a78bfa}
 nav{display:flex;gap:20px}nav a{color:var(--muted);text-decoration:none}nav a:hover{color:white}
@@ -24,33 +25,92 @@ button,select{font:inherit}button{border:0;border-radius:10px;background:var(--a
 .empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
 footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--muted);font-size:12px}
 .modal{display:none;position:fixed;inset:0;background:#03050bf2;z-index:20;overflow:auto;padding:18px}.modal.open{display:block}
-.player-shell{max-width:1050px;margin:2vh auto;background:#101521;border:1px solid #30394a;border-radius:16px;overflow:hidden}
-.player-shell:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;border:0;border-radius:0;display:flex;flex-direction:column;background:#000;overflow:auto}
-.player-shell:fullscreen .player-top{flex:0 0 auto;background:#101521}
-.player-shell:fullscreen .video-wrap{flex:1 1 auto;min-height:0;aspect-ratio:auto}
-.player-shell:fullscreen video{width:100%;height:100%;max-height:none;object-fit:contain}
-.player-shell:fullscreen .controls{flex:0 0 auto;background:#101521}
-.player-shell:fullscreen .player-meta{flex:0 0 auto;background:#101521}
-.player-shell:-webkit-full-screen{width:100vw;height:100vh;max-width:none;margin:0;border:0;border-radius:0;display:flex;flex-direction:column;background:#000}
-.player-shell:-webkit-full-screen .video-wrap{flex:1 1 auto;min-height:0;aspect-ratio:auto}
-.player-shell:-webkit-full-screen video{width:100%;height:100%;max-height:none;object-fit:contain}
-.player-shell:-webkit-full-screen .controls,.player-shell:-webkit-full-screen .player-top,.player-shell:-webkit-full-screen .player-meta{flex:0 0 auto}
-.player-top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;gap:10px}.player-top strong{font-size:16px}.close{background:#293244}
-.video-wrap{position:relative;background:#000;aspect-ratio:16/9;display:flex;align-items:center}
-video{width:100%;height:100%;max-height:68vh;display:block;background:#000}
+.player-shell{position:relative;max-width:1050px;margin:2vh auto;background:#101521;border:1px solid #30394a;border-radius:16px;overflow:hidden}
+.player-top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;gap:10px;background:#101521}
+.player-top strong{font-size:16px}.close{background:#293244}
+.video-wrap{position:relative;background:#000;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden}
+video{width:100%;height:100%;max-height:68vh;display:block;background:#000;object-fit:contain}
 .controls{padding:12px 15px 15px;background:#101521}
-.seek{width:100%;accent-color:#a78bfa;cursor:pointer}.control-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.seek{width:100%;accent-color:#a78bfa;cursor:pointer;display:block}
+.control-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
 .control-row button{padding:8px 12px}.control-row select{background:#202a3a;color:white;border:1px solid #39465c;border-radius:8px;padding:8px;max-width:100%}
 .time{font-variant-numeric:tabular-nums;color:#cbd5e1;font-size:12px}.spacer{flex:1}
 .player-meta{padding:14px 16px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .player-meta h3{font-size:14px;margin:0 0 8px}.episode-list{display:flex;gap:8px;flex-wrap:wrap}.episode-list button{background:#263247;border:1px solid #3b4961}.episode-list button.active{background:#6d4bc3}
 .note{font-size:12px;color:#aab5c7;margin:12px 0 0}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#263247;color:white;padding:10px 16px;border-radius:10px;display:none;z-index:30}
+
+/* Fullscreen is one video canvas. Header, controls and metadata no longer reserve layout space. */
+.player-shell:fullscreen,
+.player-shell:-webkit-full-screen{
+  position:fixed;width:100vw;height:100vh;width:100dvw;height:100dvh;
+  max-width:none;max-height:none;inset:0;margin:0;padding:0;
+  border:0;border-radius:0;overflow:hidden;background:#000;
+  display:block;isolation:isolate;
+}
+.player-shell:fullscreen .video-wrap,
+.player-shell:-webkit-full-screen .video-wrap{
+  position:absolute;inset:0;width:100%;height:100%;min-height:0;
+  aspect-ratio:auto;display:block;overflow:hidden;background:#000;
+}
+.player-shell:fullscreen video,
+.player-shell:-webkit-full-screen video{
+  position:absolute;inset:0;width:100%;height:100%;max-height:none;
+  object-fit:contain;background:#000;
+}
+.player-shell:fullscreen .player-top,
+.player-shell:-webkit-full-screen .player-top{
+  position:absolute;top:0;left:0;right:0;z-index:12;
+  padding:calc(14px + env(safe-area-inset-top)) 18px 30px;
+  background:linear-gradient(180deg,rgba(5,7,12,.82),transparent);
+  transition:opacity .22s ease;
+}
+.player-shell:fullscreen .controls,
+.player-shell:-webkit-full-screen .controls{
+  position:absolute;left:0;right:0;bottom:0;z-index:12;
+  padding:34px 18px calc(16px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,rgba(5,7,12,.94),rgba(5,7,12,.62) 72%,transparent);
+  transition:opacity .22s ease;
+}
+.player-shell:fullscreen .player-meta,
+.player-shell:-webkit-full-screen .player-meta{display:none}
+.player-shell:fullscreen .control-row,
+.player-shell:-webkit-full-screen .control-row{gap:8px}
+.player-shell:fullscreen .controls .seek,
+.player-shell:-webkit-full-screen .controls .seek{height:22px}
+.player-shell:fullscreen.controls-hidden .player-top,
+.player-shell:fullscreen.controls-hidden .controls,
+.player-shell:-webkit-full-screen.controls-hidden .player-top,
+.player-shell:-webkit-full-screen.controls-hidden .controls{
+  opacity:0;pointer-events:none;
+}
+.player-shell:fullscreen .close,
+.player-shell:-webkit-full-screen .close{background:#293244e8}
+.player-shell:fullscreen .control-row button,
+.player-shell:-webkit-full-screen .control-row button{padding:9px 12px}
+.player-shell:fullscreen .control-row select,
+.player-shell:-webkit-full-screen .control-row select{padding:9px}
+@media(orientation:landscape) and (max-height:500px){
+  .player-shell:fullscreen .player-top,.player-shell:-webkit-full-screen .player-top{padding:5px 14px 20px}
+  .player-shell:fullscreen .controls,.player-shell:-webkit-full-screen .controls{padding:22px 14px calc(6px + env(safe-area-inset-bottom))}
+  .player-shell:fullscreen .control-row,.player-shell:-webkit-full-screen .control-row{gap:6px;margin-top:2px}
+  .player-shell:fullscreen .control-row button,.player-shell:-webkit-full-screen .control-row button{padding:6px 9px;font-size:13px}
+  .player-shell:fullscreen .control-row select,.player-shell:-webkit-full-screen .control-row select{padding:6px;font-size:13px}
+  .player-shell:fullscreen .time,.player-shell:-webkit-full-screen .time{font-size:11px}
+}
 @media(max-width:650px){
-.player-shell:fullscreen .player-meta,.player-shell:-webkit-full-screen .player-meta{display:none}
-.player-shell:fullscreen .control-row,.player-shell:-webkit-full-screen .control-row{gap:6px}
-.player-shell:fullscreen .control-row button,.player-shell:-webkit-full-screen .control-row button{padding:8px 10px}
-header{height:58px}nav{gap:12px;font-size:13px}.logo{font-size:20px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.poster{height:115px;font-size:17px}.card-body{padding:10px}.player-meta{grid-template-columns:1fr}.modal{padding:0}.player-shell{margin:0;min-height:100vh;border-radius:0;border:0}.player-top{padding:12px}.video-wrap{aspect-ratio:16/9}.controls{padding:10px}.control-row{gap:7px}.control-row button,.control-row select{font-size:12px;padding:8px}.control-row .spacer{display:none}}
+  header{height:58px}nav{gap:12px;font-size:13px}.logo{font-size:20px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .poster{height:115px;font-size:17px}.card-body{padding:10px}
+  .player-meta{grid-template-columns:1fr}
+  .modal{padding:0}
+  .player-shell{margin:0;min-height:100vh;border-radius:0;border:0}
+  .player-top{padding:12px}.video-wrap{aspect-ratio:16/9}
+  .controls{padding:10px}.control-row{gap:7px}
+  .control-row button,.control-row select{font-size:12px;padding:8px}
+  .control-row .spacer{display:none}
+}
+@media(prefers-reduced-motion:reduce){.player-top,.controls{transition:none}}
 </style>
 </head>
 <body>
@@ -79,12 +139,11 @@ header{height:58px}nav{gap:12px;font-size:13px}.logo{font-size:20px}.grid{grid-t
 <p class="note">This demo uses the public Mux HLS test stream featuring Big Buck Bunny, an animated film by the Blender Foundation licensed under Creative Commons Attribution 3.0. The stream is hosted externally and is for player testing, not a guaranteed production source.</p>
 </main>
 <footer>CineVerse · Playback prototype · Use only video content you own or are licensed to distribute.</footer>
-
 <div class="modal" id="playerModal" role="dialog" aria-modal="true" aria-label="Video player">
- <div class="player-shell">
+ <div class="player-shell" id="playerShell">
   <div class="player-top"><strong id="playerTitle">Now playing</strong><button class="close" onclick="closePlayer()">Close ✕</button></div>
   <div class="video-wrap" id="videoWrap"><video id="video" playsinline preload="metadata"></video></div>
-  <div class="controls">
+  <div class="controls" id="playerControls">
    <input class="seek" id="seek" type="range" min="0" max="1000" value="0" aria-label="Video progress">
    <div class="control-row">
     <button id="playBtn" onclick="togglePlay()">▶ Play</button>
@@ -94,7 +153,7 @@ header{height:58px}nav{gap:12px;font-size:13px}.logo{font-size:20px}.grid{grid-t
     <label class="time">Volume <input id="volume" type="range" min="0" max="1" step="0.05" value="1" style="width:76px;vertical-align:middle"></label>
     <button class="secondary" id="muteBtn" onclick="toggleMute()">Mute</button>
     <select id="quality" aria-label="Video quality"><option value="-1">Auto quality</option></select>
-    <button class="secondary" onclick="toggleFullscreen()">Full screen</button>
+    <button class="secondary" id="fullscreenBtn" onclick="toggleFullscreen()">Full screen</button>
    </div>
   </div>
   <div class="player-meta">
@@ -112,19 +171,47 @@ const seriesEpisodes=[
  {title:'Episode 2 — The Journey',src:DEMO_STREAM},
  {title:'Episode 3 — The Finale',src:DEMO_STREAM}
 ];
-const video=document.getElementById('video'), modal=document.getElementById('playerModal');
+const video=document.getElementById('video'),modal=document.getElementById('playerModal');
+const playerShell=document.getElementById('playerShell');
 let hls=null,currentType='movie',episodeIndex=0,activeKey='movie',levels=[];
+let controlsTimer=null;
+const CONTROLS_DELAY=4000;
 const storeKey='cineverse_demo_progress_v1';
 function readProgress(){try{return JSON.parse(localStorage.getItem(storeKey)||'{}')}catch(e){return {}}}
-function writeProgress(data){localStorage.setItem(storeKey,JSON.stringify(data))}
+function writeProgress(data){try{localStorage.setItem(storeKey,JSON.stringify(data))}catch(e){toast('Progress could not be saved in this browser')}}
 function keyFor(){return currentType==='series'?'series-'+episodeIndex:'movie'}
 function currentSource(){return currentType==='series'?seriesEpisodes[episodeIndex]:{title:'Big Buck Bunny',src:DEMO_STREAM}}
 function fmt(s){if(!Number.isFinite(s))return '0:00';let h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=Math.floor(s%60);return h?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2200)}
+function isFullscreen(){return document.fullscreenElement===playerShell||document.webkitFullscreenElement===playerShell}
+function clearControlsTimer(){if(controlsTimer!==null){clearTimeout(controlsTimer);controlsTimer=null}}
+function showControls(resetTimer=true){
+ playerShell.classList.remove('controls-hidden');
+ clearControlsTimer();
+ if(resetTimer&&isFullscreen()&&!video.paused&&!video.ended){
+  controlsTimer=setTimeout(()=>{if(isFullscreen()&&!video.paused&&!video.ended)playerShell.classList.add('controls-hidden')},CONTROLS_DELAY);
+ }
+}
+function hideControls(){
+ clearControlsTimer();
+ if(isFullscreen()&&!video.paused&&!video.ended)playerShell.classList.add('controls-hidden');
+}
+function syncFullscreenButton(){
+ document.getElementById('fullscreenBtn').textContent=isFullscreen()?'Exit full screen':'Full screen';
+ if(isFullscreen())showControls(true);
+ else{clearControlsTimer();playerShell.classList.remove('controls-hidden')}
+}
 function destroyStream(){if(hls){hls.destroy();hls=null}video.pause();video.removeAttribute('src');video.load()}
-function openPlayer(type,index=0){currentType=type;episodeIndex=index;modal.classList.add('open');document.body.style.overflow='hidden';loadCurrent(true)}
-function closePlayer(){saveProgress();destroyStream();modal.classList.remove('open');document.body.style.overflow='';renderContinue()}
+function openPlayer(type,index=0){
+ currentType=type;episodeIndex=index;modal.classList.add('open');document.body.style.overflow='hidden';
+ playerShell.classList.remove('controls-hidden');loadCurrent(true);
+}
+function closePlayer(){
+ clearControlsTimer();saveProgress();if(isFullscreen()){if(document.exitFullscreen)document.exitFullscreen().catch(()=>{});else if(document.webkitExitFullscreen)document.webkitExitFullscreen()}
+ destroyStream();modal.classList.remove('open');document.body.style.overflow='';playerShell.classList.remove('controls-hidden');renderContinue();
+}
 function loadCurrent(resume=true){
+ clearControlsTimer();playerShell.classList.remove('controls-hidden');
  const item=currentSource();activeKey=keyFor();document.getElementById('playerTitle').textContent=item.title;
  document.getElementById('playbackInfo').textContent='Connecting to public adaptive HLS sample…';
  document.getElementById('episodePicker').innerHTML=currentType==='series'?seriesEpisodes.map((ep,i)=>`<button class="${i===episodeIndex?'active':''}" onclick="selectEpisode(${i})">${i+1}</button>`).join(''):'<span class="muted">Movie playback</span>';
@@ -132,49 +219,73 @@ function loadCurrent(resume=true){
  destroyStream();levels=[];
  if(window.Hls&&Hls.isSupported()){
   hls=new Hls({capLevelToPlayerSize:true});hls.loadSource(item.src);hls.attachMedia(video);
-  hls.on(Hls.Events.MANIFEST_PARSED,(_,data)=>{levels=data.levels||[];populateQuality();document.getElementById('playbackInfo').textContent=`HLS stream ready · ${levels.length} available quality levels · Adaptive playback supported`;restorePosition(resume);});
-  hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal){document.getElementById('playbackInfo').textContent='The sample stream could not be loaded. Check your connection or try again later.';toast('Video stream error');}});
+  hls.on(Hls.Events.MANIFEST_PARSED,(_,data)=>{levels=data.levels||[];populateQuality();document.getElementById('playbackInfo').textContent=`HLS stream ready · ${levels.length} available quality levels · Adaptive playback supported`;restorePosition(resume)});
+  hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal){document.getElementById('playbackInfo').textContent='The sample stream could not be loaded. Check your connection or try again later.';toast('Video stream error')}});
  }else if(video.canPlayType('application/vnd.apple.mpegurl')){
-  video.src=item.src;video.addEventListener('loadedmetadata',function once(){video.removeEventListener('loadedmetadata',once);document.getElementById('playbackInfo').textContent='Native HLS playback · Quality selection is managed by your device/browser';restorePosition(resume);});
- }else{document.getElementById('playbackInfo').textContent='This browser does not support HLS playback.';}
+  video.src=item.src;video.addEventListener('loadedmetadata',function once(){video.removeEventListener('loadedmetadata',once);document.getElementById('playbackInfo').textContent='Native HLS playback · Quality selection is managed by your device/browser';restorePosition(resume)});
+ }else{document.getElementById('playbackInfo').textContent='This browser does not support HLS playback.'}
 }
 function populateQuality(){let q=document.getElementById('quality');q.innerHTML='<option value="-1">Auto quality</option>';levels.forEach((l,i)=>{let opt=document.createElement('option');opt.value=i;opt.textContent=(l.height||'?')+'p';q.appendChild(opt)});q.value='-1'}
-document.getElementById('quality').addEventListener('change',e=>{if(hls){hls.currentLevel=Number(e.target.value);toast(e.target.value==='-1'?'Adaptive quality enabled':'Quality set to '+(levels[Number(e.target.value)]?.height||'selected')+'p')}else{toast('Manual quality is not exposed by this browser for this stream')}})
-function restorePosition(resume){let p=readProgress()[activeKey];if(resume&&p&&p.time>5){video.currentTime=p.time;toast('Resumed from '+fmt(p.time))}video.play().then(()=>{}).catch(()=>{document.getElementById('playBtn').textContent='▶ Play';});}
+document.getElementById('quality').addEventListener('change',e=>{if(hls){hls.currentLevel=Number(e.target.value);toast(e.target.value==='-1'?'Adaptive quality enabled':'Quality set to '+(levels[Number(e.target.value)]?.height||'selected')+'p')}else{toast('Manual quality is not exposed by this browser for this stream')}showControls(true)});
+function restorePosition(resume){let p=readProgress()[activeKey];if(resume&&p&&p.time>5){video.currentTime=p.time;toast('Resumed from '+fmt(p.time))}video.play().then(()=>{}).catch(()=>{document.getElementById('playBtn').textContent='▶ Play';showControls(false)})}
 function togglePlay(){if(video.paused){video.play().catch(()=>toast('Tap play again to start playback'))}else video.pause()}
-video.addEventListener('play',()=>document.getElementById('playBtn').textContent='❚❚ Pause');
-video.addEventListener('pause',()=>document.getElementById('playBtn').textContent='▶ Play');
+video.addEventListener('play',()=>{document.getElementById('playBtn').textContent='❚❚ Pause';showControls(true)});
+video.addEventListener('pause',()=>{document.getElementById('playBtn').textContent='▶ Play';clearControlsTimer();playerShell.classList.remove('controls-hidden')});
 video.addEventListener('timeupdate',()=>{let d=video.duration||0,t=video.currentTime||0;document.getElementById('seek').value=d?Math.round(t/d*1000):0;document.getElementById('timeLabel').textContent=fmt(t)+' / '+fmt(d);if(Math.floor(t)%5===0)saveProgress(false)});
-document.getElementById('seek').addEventListener('input',e=>{if(video.duration)video.currentTime=Number(e.target.value)/1000*video.duration});
-document.getElementById('volume').addEventListener('input',e=>{video.volume=Number(e.target.value);video.muted=video.volume===0});
-document.addEventListener('fullscreenchange',()=>{let b=document.querySelector('.control-row button[onclick="toggleFullscreen()"]');if(b)b.textContent=document.fullscreenElement?'Exit full screen':'Full screen'});
-document.addEventListener('webkitfullscreenchange',()=>{let b=document.querySelector('.control-row button[onclick="toggleFullscreen()"]');if(b)b.textContent=document.webkitFullscreenElement?'Exit full screen':'Full screen'});
-function toggleMute(){video.muted=!video.muted;document.getElementById('muteBtn').textContent=video.muted?'Unmute':'Mute'}
-function skip(n){if(Number.isFinite(video.duration))video.currentTime=Math.max(0,Math.min(video.duration,video.currentTime+n))}
+document.getElementById('seek').addEventListener('input',e=>{if(video.duration)video.currentTime=Number(e.target.value)/1000*video.duration;showControls(true)});
+document.getElementById('volume').addEventListener('input',e=>{video.volume=Number(e.target.value);video.muted=video.volume===0;showControls(true)});
+document.addEventListener('fullscreenchange',syncFullscreenButton);
+document.addEventListener('webkitfullscreenchange',syncFullscreenButton);
+function toggleMute(){video.muted=!video.muted;document.getElementById('muteBtn').textContent=video.muted?'Unmute':'Mute';showControls(true)}
+function skip(n){if(Number.isFinite(video.duration))video.currentTime=Math.max(0,Math.min(video.duration,video.currentTime+n));showControls(true)}
 function toggleFullscreen(){
- const el=document.querySelector('.player-shell');
- const isFullscreen=!!(document.fullscreenElement||document.webkitFullscreenElement);
- if(isFullscreen){
+ const el=playerShell;
+ if(isFullscreen()){
   if(document.exitFullscreen)document.exitFullscreen().catch(()=>{});
   else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
   return;
  }
- if(el.requestFullscreen){
-  el.requestFullscreen().catch(()=>toast('Full screen unavailable in this browser'));
- }else if(el.webkitRequestFullscreen){
-  el.webkitRequestFullscreen();
- }else if(video.webkitEnterFullscreen){
-  // Some iOS browsers only support native video fullscreen; native controls are provided by the browser.
+ if(el.requestFullscreen){el.requestFullscreen().then(()=>showControls(true)).catch(()=>toast('Full screen unavailable in this browser'))}
+ else if(el.webkitRequestFullscreen){el.webkitRequestFullscreen();showControls(true)}
+ else if(video.webkitEnterFullscreen){
+  // Some iOS browsers only expose native video fullscreen; browser-native controls are used there.
   video.webkitEnterFullscreen();
- }else{
-  toast('Full screen is not supported in this browser');
- }
+ }else{toast('Full screen is not supported in this browser')}
 }
-function saveProgress(render=true){if(!video.duration||!Number.isFinite(video.currentTime))return;let data=readProgress();if(video.currentTime>video.duration-5){delete data[activeKey]}else if(video.currentTime>2){data[activeKey]={type:currentType,title:currentSource().title,time:video.currentTime,duration:video.duration,updated:Date.now(),episode:episodeIndex}}writeProgress(data);if(render)renderContinue()}
+function saveProgress(render=true){
+ if(!video.duration||!Number.isFinite(video.currentTime))return;
+ let data=readProgress();
+ if(video.currentTime>video.duration-5){delete data[activeKey]}
+ else if(video.currentTime>2){data[activeKey]={type:currentType,title:currentSource().title,time:video.currentTime,duration:video.duration,updated:Date.now(),episode:episodeIndex}}
+ writeProgress(data);if(render)renderContinue();
+}
 function selectEpisode(i){saveProgress(false);episodeIndex=i;loadCurrent(false)}
-video.addEventListener('ended',()=>{if(currentType==='series'&&episodeIndex<seriesEpisodes.length-1){episodeIndex++;loadCurrent(false);toast('Playing next episode')}else{saveProgress();toast('Playback finished')}});
-function renderContinue(){let data=readProgress(),items=Object.entries(data).sort((a,b)=>b[1].updated-a[1].updated),grid=document.getElementById('continueGrid');document.getElementById('continueCount').textContent=items.length+' titles';if(!items.length){grid.innerHTML='<div class="empty">Your viewing progress will appear here after you play a video.</div>';return}grid.innerHTML=items.map(([key,p])=>`<article class="card"><div class="poster">${p.type==='series'?'TEST SERIES':'BIG BUCK BUNNY'}</div><div class="card-body"><h3>${p.title}</h3><p>${fmt(p.time)} watched · ${Math.round(p.time/(p.duration||1)*100)}%</p><div class="progress"><i style="width:${Math.min(100,p.time/(p.duration||1)*100)}%"></i></div><button onclick="${p.type==='series'?`openPlayer('series',${p.episode||0})`:`openPlayer('movie')`}">Resume</button></div></article>`).join('')}
-window.addEventListener('beforeunload',()=>saveProgress(false));renderContinue();
+video.addEventListener('ended',()=>{clearControlsTimer();playerShell.classList.remove('controls-hidden');if(currentType==='series'&&episodeIndex<seriesEpisodes.length-1){episodeIndex++;loadCurrent(false);toast('Playing next episode')}else{saveProgress();toast('Playback finished')}});
+function renderContinue(){
+ let data=readProgress(),items=Object.entries(data).sort((a,b)=>b[1].updated-a[1].updated),grid=document.getElementById('continueGrid');
+ document.getElementById('continueCount').textContent=items.length+' titles';
+ if(!items.length){grid.innerHTML='<div class="empty">Your viewing progress will appear here after you play a video.</div>';return}
+ grid.innerHTML=items.map(([key,p])=>`<article class="card"><div class="poster">${p.type==='series'?'TEST SERIES':'BIG BUCK BUNNY'}</div><div class="card-body"><h3>${p.title}</h3><p>${fmt(p.time)} watched · ${Math.round(p.time/(p.duration||1)*100)}%</p><div class="progress"><i style="width:${Math.min(100,p.time/(p.duration||1)*100)}%"></i></div><button onclick="${p.type==='series'?`openPlayer('series',${p.episode||0})`:`openPlayer('movie')`}">Resume</button></div></article>`).join('');
+}
+
+/* Touch/click behaviour: video taps reveal controls; controls themselves never toggle the overlay. */
+document.getElementById('videoWrap').addEventListener('click',()=>showControls(true));
+playerShell.addEventListener('pointermove',()=>{if(isFullscreen())showControls(true)});
+playerShell.addEventListener('pointerdown',e=>{
+ if(!isFullscreen())return;
+ if(e.target.closest('.controls,.player-top'))showControls(true);
+ else if(e.target===playerShell)showControls(true);
+});
+document.getElementById('playerControls').addEventListener('click',e=>{e.stopPropagation();showControls(true)});
+document.querySelector('.player-top').addEventListener('click',e=>{e.stopPropagation();showControls(true)});
+document.addEventListener('keydown',e=>{
+ if(!modal.classList.contains('open'))return;
+ if(e.key==='Escape')return;
+ if(e.key===' '&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'&&e.target.tagName!=='SELECT'){e.preventDefault();togglePlay();showControls(true)}
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearControlsTimer()});
+window.addEventListener('beforeunload',()=>saveProgress(false));
+renderContinue();
 </script>
 </body>
 </html>
