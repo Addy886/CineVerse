@@ -77,7 +77,7 @@ video{width:100%;height:100%;max-height:68vh;display:block;background:#000;objec
 const DEMO_STREAM='https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
 const seriesEpisodes=[{title:'Episode 1 — The Beginning',src:DEMO_STREAM},{title:'Episode 2 — The Journey',src:DEMO_STREAM},{title:'Episode 3 — The Finale',src:DEMO_STREAM}];
 const video=document.getElementById('video'),modal=document.getElementById('playerModal'),playerShell=document.getElementById('playerShell');
-let hls=null,currentType='movie',episodeIndex=0,activeKey='movie',levels=[],controlsTimer=null;
+let hls=null,currentType='movie',episodeIndex=0,activeKey='movie',levels=[],controlsTimer=null,playbackSpeed=1;
 const CONTROLS_DELAY=4000,storeKey='cineverse_demo_progress_v1';
 function readProgress(){try{return JSON.parse(localStorage.getItem(storeKey)||'{}')}catch(e){return {}}}
 function writeProgress(data){try{localStorage.setItem(storeKey,JSON.stringify(data))}catch(e){toast('Progress could not be saved in this browser')}}
