@@ -49,8 +49,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;border-top:1px solid 
 <nav class="nav"><a href="#home" data-nav="home">Home</a><a href="#movies" data-nav="movies">Movies</a><a href="#tv" data-nav="tv">TV Shows</a><a href="#history" data-nav="history">History</a></nav>
 <div class="actions"><button class="icon" onclick="go('search')" aria-label="Search">⌕</button><button class="icon" onclick="go('watchlist')" aria-label="Watchlist">♡</button><button class="icon" onclick="toggleDrawer()" aria-label="Open menu">☰</button></div>
 </header>
-<div class="dr
- <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer(false)"></div>
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer(false)"></div>
 <aside class="drawer" id="drawer" aria-label="Site menu">
  <div class="drawer-top"><a class="brand" href="#home"><span class="logo">A2Z</span>A2Z<b>FLIX</b></a><button class="icon" onclick="toggleDrawer(false)" aria-label="Close menu">×</button></div>
  <div class="drawer-links">
@@ -203,7 +202,7 @@ grid('related',data.filter(x=>x.id!==id).slice(0,4));go('detail');
 function renderDetailEpisodes(){let eps=allEpisodes(item);$('detailEpisodes').innerHTML=eps.length?eps.map((e,i)=>`<button class="episode-card ${i===ep?'active':''}" onclick="openPlayer('${item.id}',${i})"><span class="episode-num">${i+1}</span><span><b>Episode ${i+1}: ${esc(e.title)}</b><small>Episode ${i+1} · ${esc(e.duration||'N/A')}</small></span></button>`).join(''):'<div class="empty">No episode sources have been added for this season yet.</div>'}
 $('seasonSelect').addEventListener('change',e=>{season=+e.target.value;ep=0;renderDetailEpisodes()});
 function watchButton(){let w=read(SAVED),saved=!!w[item.id];$('saveWatch').textContent=saved?'✓ Added to watchlist':'♡ Watchlist';$('saveWatch').onclick=()=>{w=read(SAVED);if(w[item.id])delete w[item.id];else w[item.id]=true;write(SAVED,w);watchButton();toast(w[item.id]?'Added to watchlist':'Removed from watchlist')}}
-function sources(){if(item.type==='tv'){let e=allEpisodes(item)[ep];return e?.sources||(e?.src?[{name:'Episode source',src:e.src,enabled:true}]:[])}return item.sources||(item.stream?[{name:'Demo HLS',src:item.stream,enabled:true}]:[])}
+function sources(){if(item.type==='tv'){let e=allEpisodes(item)[ep];return e?.sources||(e?.src?[{name:'Episode source',src:e.src,enabled:true}]:[])}return item.sources||(item.stream?[{name:'Demo HLS',src:item.stream,type:'hls',enabled:true}]:[])}
 function openPlayer(id,index){item=data.find(x=>x.id===id);if(!item)return;ep=Math.max(0,Math.min(index||0,(allEpisodes(item).length||1)-1));server=0;lastSaveSecond=-1;go('player');$('playerCrumb').textContent=item.title;renderServers();renderEpisodes();load(true)}
 function resume(id,index){let x=data.find(d=>d.id===id);if(x&&(x.stream||x.seasons?.some(s=>s.length)))openPlayer(id,index);else detail(id)}
 function renderServers(){let a=sources();$('servers').innerHTML=a.length?a.map((s,i)=>`<button class="server ${server===i?'active':''}" ${s.enabled===false?'disabled':''} onclick="chooseServer(${i})">${esc(s.name||'Server '+(i+1))}</button>`).join(''):'<div class="empty">No authorised source configured for this title.</div>'}
@@ -223,7 +222,10 @@ destroy();let src=currentSrc();if(!src){$('playerInfo').textContent='No authoris
 if(!/^https:\/\//i.test(src)){$('playerInfo').textContent='Video source must use HTTPS.';return}
 $('playerTitle').textContent=item.title+(item.type==='tv'?' · Episode '+(ep+1):'');$('playerInfo').textContent='Connecting to video source…';let saved=read(PROGRESS)[item.id];
 function ready(){if(shouldResume&&saved&&saved.time>5&&(!saved.ep||saved.ep===ep)){try{video.currentTime=saved.time}catch(e){}}video.play().then(()=>showPlayerUI()).catch(()=>{updatePlay();showPlayerUI()})}
-if(window.Hls&&Hls.isSupported()){
+const selectedSource=sources()[server]||{};
+const isMp4=selectedSource.type==='mp4'||/\.mp4(?:$|[?#])/i.test(src);
+if(isMp4){video.src=src;video.addEventListener('loadedmetadata',function once(){video.removeEventListener('loadedmetadata',once);$('playerInfo').textContent='MP4 ready';ready()});video.addEventListener('error',()=>{$('playerInfo').textContent='The MP4 source could not be played. Check the source URL and hosting permissions.'},{once:true})}
+else if(window.Hls&&Hls.isSupported()){
  hls=new Hls({capLevelToPlayerSize:true});hls.loadSource(src);hls.attachMedia(video);
  hls.on(Hls.Events.MANIFEST_PARSED,(_,d)=>{(d.levels||[]).forEach((l,i)=>{let o=document.createElement('option');o.value=i;o.textContent=(l.height||'?')+'p';$('quality').appendChild(o)});$('playerInfo').textContent='HLS ready · '+(d.levels||[]).length+' quality levels';captions();ready()});
  hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,captions);
@@ -273,14 +275,47 @@ window.addEventListener('beforeunload',()=>{save(false);addHistory()});
 window.addEventListener('hashchange',()=>{let p=location.hash.slice(1);if(p&&$(''+p)&&!['detail','player'].includes(p))go(p)});
 home();filterList('movie');filterList('tv');go(location.hash.slice(1)||'home');
 </script>
- 
+
 <script>
 /* A2Zflix TMDB integration layer. Existing local demo playback is retained. */
 (function(){
 'use strict';
- 
+
 const API_BASE='https://cineverse-tmdb-api.adnanshaikh09sep2006-ff5.workers.dev';
+const SUPABASE_URL='https://lryenvuityisolpmqigr.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_YS9idC-LcLcMFM3xtIlP1w_fqO64fkm';
 const IMAGE_BASE='https://image.tmdb.org/t/p/';
+
+async function getAuthorisedSources(filters){
+ const params=new URLSearchParams({
+  select:'id,tmdb_id,media_type,season_number,episode_number,provider,source_name,stream_url,stream_type,enabled,priority',
+  tmdb_id:'eq.'+String(filters.tmdbId),
+  media_type:'eq.'+filters.mediaType,
+  enabled:'eq.true',
+  order:'priority.asc,created_at.asc'
+ });
+ if(filters.mediaType==='movie'){
+  params.set('season_number','is.null');
+  params.set('episode_number','is.null');
+ }else if(filters.seasonNumber!==undefined){
+  params.set('season_number','eq.'+String(filters.seasonNumber));
+  if(filters.episodeNumber!==undefined)params.set('episode_number','eq.'+String(filters.episodeNumber));
+ }
+ const response=await fetch(SUPABASE_URL+'/rest/v1/stream_sources?'+params.toString(),{
+  method:'GET',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Accept':'application/json'}
+ });
+ if(!response.ok){
+  let detail='';try{const body=await response.json();detail=body.message||body.hint||''}catch(e){}
+  throw new Error('Supabase returned HTTP '+response.status+(detail?': '+detail:''));
+ }
+ const rows=await response.json();
+ if(!Array.isArray(rows))throw new Error('Supabase returned an unexpected response.');
+ return rows.filter(row=>row.enabled===true&&/^https:\/\//i.test(row.stream_url||'')).map(row=>({
+  name:row.source_name||row.provider||'Authorised source',
+  provider:row.provider||'',src:row.stream_url,type:row.stream_type||'hls',enabled:true,
+  episodeNumber:row.episode_number===null?null:Number(row.episode_number),priority:Number(row.priority)||1
+ }));
+}
 const apiCache=new Map();
 const API_CACHE_TTL=120000;
 let activeGenreType='movie';
@@ -288,7 +323,7 @@ let activeGenreId='all';
 let genrePage=1;
 let searchDebounce=null;
 let activeDetailRequest=0;
- 
+
 const MOVIE_GENRES=[
  [28,'Action'],[12,'Adventure'],[16,'Animation'],[35,'Comedy'],[80,'Crime'],
  [99,'Documentary'],[18,'Drama'],[10751,'Family'],[14,'Fantasy'],[36,'History'],
@@ -301,7 +336,7 @@ const TV_GENRES=[
  [10763,'News'],[10764,'Reality'],[10765,'Sci-Fi & Fantasy'],[10766,'Soap'],
  [10767,'Talk'],[10768,'War & Politics'],[37,'Western']
 ];
- 
+
 function byId(id){return document.getElementById(id)}
 function safeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function imageUrl(path,size){return path?IMAGE_BASE+(size||'w500')+path:''}
@@ -523,9 +558,11 @@ async function detail(id){
    });
    if(type==='tv'){
     item.seasonMeta=(details.seasons||[]).filter(season=>season.season_number>=0);
-    item.seasons=item.seasonMeta.map(season=>({season_number:season.season_number,name:season.name,episode_count:season.episode_count}));
+    item.seasons=item.seasonMeta.map(()=>[]);
+   }else{
+    item.sources=await getAuthorisedSources({tmdbId:tid,mediaType:'movie'});
    }
-  }catch(error){toast('Some catalogue details could not be loaded. '+error.message)}
+  }catch(error){toast('Some catalogue details or authorised sources could not be loaded. '+error.message)}
  }
  if(requestId!==activeDetailRequest)return;
  byId('crumb').textContent=item.title;
@@ -542,10 +579,6 @@ async function detail(id){
  byId('detailTitle').textContent=item.title;
  byId('detailBadges').innerHTML=`<span class="badge">${item.type==='tv'?'TV Show':'Movie'}</span><span class="badge rating">★ ${safeText(item.rating||'—')}</span>${item.year?`<span class="badge">${safeText(item.year)}</span>`:''}`;
  byId('description').textContent=item.desc||'No overview available.';
- const playable=!!(item.stream||item.sources?.length||(!item.remote&&item.seasons?.some(season=>Array.isArray(season)&&season.length)));
- byId('watchNow').disabled=!playable;
- byId('watchNow').textContent=playable?'▶ Watch now':'No authorised stream configured';
- byId('watchNow').onclick=()=>{if(playable)openPlayer(item.id,0)};
  byId('trailerButton').onclick=()=>{
   if(item.trailer)window.open('https://www.youtube.com/watch?v='+item.trailer,'_blank','noopener');
   else toast('No official YouTube trailer is available for this title.');
@@ -566,26 +599,66 @@ async function detail(id){
   byId('seasonSelect').value='0';
   await renderDetailEpisodes();
  }
+ const playable=isTV?!!(allEpisodes(item).some(episode=>episode.sources?.length)):!!(item.stream||item.sources?.length||(!item.remote&&item.seasons?.some(season=>Array.isArray(season)&&season.length)));
+ byId('watchNow').disabled=!playable;
+ byId('watchNow').textContent=playable?'▶ Watch now':'No authorised stream configured';
+ byId('watchNow').onclick=()=>{
+  if(!playable){toast('No authorised source is configured in Supabase for this title.');return}
+  if(isTV){const first=allEpisodes(item).findIndex(episode=>episode.sources?.length);if(first>=0)playRemoteEpisode(first)}
+  else openPlayer(item.id,0);
+ };
  const cast=item.cast||[];
  byId('castPanel').hidden=!cast.length;
  byId('castList').innerHTML=cast.map(person=>`<div class="cast-person"><div class="cast-avatar">${person.profile?`<img src="${person.profile}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:safeText((person.name||'?').slice(0,1))}</div><b>${safeText(person.name)}</b><small>${safeText(person.role||'Cast')}</small></div>`).join('');
  grid('related',item.similarItems||data.filter(x=>x.id!==id).slice(0,4));
  go('detail');
 }
+
 async function renderDetailEpisodes(){
  if(!item||item.type!=='tv')return;
  const seasonList=item.seasonMeta||[];
- const selected=seasonList[Number(byId('seasonSelect').value)||0];
+ const seasonIndex=Number(byId('seasonSelect').value)||0;
+ const selected=seasonList[seasonIndex];
+ season=seasonIndex;
  if(!selected){byId('detailEpisodes').innerHTML='<div class="empty">No season information is available.</div>';return}
- showLoading('detailEpisodes','Loading episode information…');
+ showLoading('detailEpisodes','Loading episode details and authorised sources…');
  try{
-  const result=await request('tv/'+item.tmdbId+'/season/'+selected.season_number);
+  const [result,sourceRows]=await Promise.all([
+   request('tv/'+item.tmdbId+'/season/'+selected.season_number),
+   getAuthorisedSources({tmdbId:item.tmdbId,mediaType:'tv',seasonNumber:selected.season_number})
+  ]);
+  const sourceMap=new Map();
+  sourceRows.forEach(source=>{
+   const n=Number(source.episodeNumber);
+   if(!Number.isInteger(n))return;
+   if(!sourceMap.has(n))sourceMap.set(n,[]);
+   sourceMap.get(n).push(source);
+  });
   const episodes=result.episodes||[];
-  byId('detailEpisodes').innerHTML=episodes.length?episodes.map(episode=>
-   `<div class="episode-card"><span class="episode-num">${episode.episode_number}</span><span><b>${safeText(episode.name||'Episode '+episode.episode_number)}</b><small>${safeText(episode.air_date||'Air date unknown')} · ${episode.runtime?episode.runtime+' min':'Runtime unknown'}</small><small>${safeText(episode.overview||'No episode overview available.')}</small></span></div>`
-  ).join(''):'<div class="empty">No episode metadata is available for this season.</div>';
- }catch(error){showLoading('detailEpisodes','Could not load episode information. '+error.message)}
+  const episodeData=episodes.map(episode=>({
+   title:episode.name||'Episode '+episode.episode_number,
+   duration:episode.runtime?episode.runtime+' min':'N/A',
+   episodeNumber:episode.episode_number,
+   sources:sourceMap.get(Number(episode.episode_number))||[]
+  }));
+  if(!Array.isArray(item.seasons))item.seasons=[];
+  item.seasons[seasonIndex]=episodeData;
+  byId('detailEpisodes').innerHTML=episodes.length?episodes.map((episode,index)=>{
+   const hasSource=!!episodeData[index].sources.length;
+   return `<button class="episode-card ${index===ep?'active':''}" onclick="playRemoteEpisode(${index})"><span class="episode-num">${episode.episode_number}</span><span><b>${safeText(episode.name||'Episode '+episode.episode_number)}</b><small>${safeText(episode.air_date||'Air date unknown')} · ${episode.runtime?episode.runtime+' min':'Runtime unknown'}</small><small>${safeText(episode.overview||'No episode overview available.')}</small><small>${hasSource?'Authorised source available':'No authorised source configured'}</small></span></button>`;
+  }).join(''):'<div class="empty">No episode metadata is available for this season.</div>';
+ }catch(error){showLoading('detailEpisodes','Could not load episode information or sources. '+error.message)}
+ const canPlay=allEpisodes(item).some(episode=>episode.sources?.length);
+ byId('watchNow').disabled=!canPlay;
+ byId('watchNow').textContent=canPlay?'▶ Watch now':'No authorised stream configured';
+ byId('watchNow').onclick=()=>{const first=allEpisodes(item).findIndex(episode=>episode.sources?.length);if(first>=0)playRemoteEpisode(first);else toast('No authorised episode source is configured in Supabase.')};
 }
+function playRemoteEpisode(index){
+ const episodes=allEpisodes(item);
+ if(!episodes[index]||!episodes[index].sources?.length){toast('No authorised source is configured for this episode.');return}
+ ep=index;openPlayer(item.id,index);
+}
+
 function renderGenres(){
  const type=byId('genreMedia')?.value||activeGenreType;
  activeGenreType=type;
@@ -661,7 +734,7 @@ async function resume(id,index){
  else if(String(id).startsWith('tmdb_')){try{const remote=await getRemote(id);if(remote)detail(id)}catch(error){toast('Could not restore title. '+error.message)}}
 }
 
- /* Store a metadata snapshot with new playback history/progress entries. */
+/* Store a metadata snapshot with new playback history/progress entries. */
 function addHistory(){
  if(!item||!Number.isFinite(video.currentTime)||video.currentTime<2)return;
  const history=read(HISTORY);
@@ -678,7 +751,7 @@ function save(render=true){
  if(render){home();if(byId('history').classList.contains('active'))renderHistory()}
 }
 
- /* Replace the original search listener, while keeping the original player listeners. */
+/* Replace the original search listener, while keeping the original player listeners. */
 const oldSearch=byId('query');
 if(oldSearch){const replacement=oldSearch.cloneNode(true);oldSearch.parentNode.replaceChild(replacement,oldSearch);replacement.addEventListener('input',searchResults)}
 byId('genreMedia').addEventListener('change',event=>{
@@ -686,7 +759,6 @@ byId('genreMedia').addEventListener('change',event=>{
 });
 byId('genreYear').addEventListener('change',()=>{genrePage=1;loadGenreResults()});
 byId('genreSort').addEventListener('change',()=>{genrePage=1;loadGenreResults()});
-byId('seasonSelect').addEventListener('change',()=>renderDetailEpisodes());
 
 populateFilters();
 
@@ -695,7 +767,7 @@ window.go=go;window.home=home;window.filterList=filterList;window.changePage=cha
 window.genre=genre;window.renderGenres=renderGenres;window.selectGenre=selectGenre;
 window.detail=detail;window.renderDetailEpisodes=renderDetailEpisodes;window.watchButton=watchButton;
 window.resume=resume;window.renderHistory=renderHistory;window.poster=poster;window.card=card;window.grid=grid;
-window.addHistory=addHistory;window.save=save;window.renderWatchlist=renderWatchlist;
+window.addHistory=addHistory;window.save=save;window.renderWatchlist=renderWatchlist;window.playRemoteEpisode=playRemoteEpisode;
 
 /* The original script has already rendered the local demo. Refresh the UI from the Worker. */
 home();
