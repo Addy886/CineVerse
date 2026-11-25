@@ -112,7 +112,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;border-top:1px solid 
  <div class="player"><div class="crumb"><a href="#home">Home</a> / <span id="playerCrumb"></span></div>
  <div class="player-shell" id="playerShell"><div class="player-head"><b id="playerTitle">Now playing</b><button class="btn dark" onclick="closePlayer()">✕ Close</button></div>
  <div class="video-wrap" id="videoWrap"><video id="video" playsinline preload="metadata"></video><div class="video-overlay"><button onclick="skip(-10)" aria-label="Back ten seconds">↶<small>10</small></button><button class="mainplay" id="playButton" onclick="togglePlay()" aria-label="Play or pause">▶</button><button onclick="skip(10)" aria-label="Forward ten seconds">↷<small>10</small></button></div></div>
- <div class="controls"><input id="seek" class="seek" type="range" min="0" max="1000" value="0" aria-label="Seek"><div class="controlrow"><span id="time" class="time">0:00 / 0:00</span><span class="grow"></span><span class="episode-nav" id="episodeControls" hidden><button class="btn dark" id="prevEpisode">⏮</button><select id="episodeSelect" aria-label="Select episode"></select><button class="btn dark" id="nextEpisode">⏭</button></span><label class="time">Vol <input id="volume" type="range" min="0" max="1" step=".05" value="1" style="width:65px;vertical-align:middle"></label><button class="btn dark" id="mute" onclick="mute()">Mute</button><select id="speed"><option value=".5">0.5×</option><option value=".75">0.75×</option><option value="1" selected>1× Speed</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option></select><select id="captions" aria-label="Captions"><option value="off">Captions off</option></select><select id="quality"><option value="-1">Auto quality</option></select><button class="btn dark" onclick="fullscreen()" aria-label="Fullscreen">⛶</button></div></div><div class="player-info" id="playerInfo">Connecting…</div></div>
+ <div class="controls"><input id="seek" class="seek" type="range" min="0" max="1000" value="0" aria-label="Seek"><div class="controlrow"><span id="time" class="time">0:00 / 0:00</span><span class="grow"></span><span class="episode-nav" id="episodeControls" hidden><button class="btn dark" id="prevEpisode">⏮</button><select id="episodeSelect" aria-label="Select episode"></select><button class="btn dark" id="nextEpisode">⏭</button></span><label class="time">Vol <input id="volume" type="range" min="0" max="1" step=".05" value="1" style="width:65px;vertical-align:middle"></label><button class="btn dark" id="mute" onclick="mute()">Mute</button><select id="speed"><option value=".5">0.5×</option><option value=".75">0.75×</option><option value="1" selected>1× Speed</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option></select><select id="audioTrack" aria-label="Audio language"><option value="auto">Audio: Auto</option></select><select id="captions" aria-label="Captions"><option value="off">Captions off</option></select><select id="quality"><option value="-1">Auto quality</option></select><button class="btn dark" onclick="fullscreen()" aria-label="Fullscreen">⛶</button></div></div><div class="player-info" id="playerInfo">Connecting…</div></div>
  <div class="player-nav" id="playerNav" hidden><button class="btn dark" id="playerPrev">‹ &nbsp; Previous</button><button class="btn" id="playerNext">Next &nbsp; ›</button></div>
  <div class="player-extras"><div class="section-panel"><h2>Episodes</h2><div class="episode-list" id="episodes"></div><p class="muted">Progress is saved in this browser on this device.</p></div><div class="section-panel"><h2>Select Server</h2><p class="muted">If the current authorised source does not work, try another configured source.</p><div class="server-grid" id="servers"></div></div></div>
  <div class="section-panel"><h2 style="text-align:center">Share this with friends!</h2><div class="share-row"><button class="share-btn" onclick="share('whatsapp')" aria-label="WhatsApp">◉</button><button class="share-btn" onclick="share('telegram')" aria-label="Telegram">➤</button><button class="share-btn" onclick="share('facebook')" aria-label="Facebook">f</button><button class="share-btn" onclick="share('copy')" aria-label="Copy link">↗</button></div></div>
@@ -139,7 +139,7 @@ const data=[
 ];
 const $=id=>document.getElementById(id),video=$('video');
 const PROGRESS='cv_progress_v2',SAVED='cv_watchlist_v1',HISTORY='cv_history_v1';
-let item=null,ep=0,season=0,server=0,hls=null,levels=[],pageState={movie:1,tv:1},genreChoice='all',lastSaveSecond=-1,hideTimer=null;
+let item=null,ep=0,season=0,server=0,hls=null,levels=[],selectedAudioLanguage='auto',pageState={movie:1,tv:1},genreChoice='all',lastSaveSecond=-1,hideTimer=null;
 const PAGE_SIZE=8;
 function read(k){try{return JSON.parse(localStorage.getItem(k)||'{}')}catch(e){return {}}}
 function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Local storage unavailable')}}
@@ -203,11 +203,18 @@ function renderDetailEpisodes(){let eps=allEpisodes(item);$('detailEpisodes').in
 $('seasonSelect').addEventListener('change',e=>{season=+e.target.value;ep=0;renderDetailEpisodes()});
 function watchButton(){let w=read(SAVED),saved=!!w[item.id];$('saveWatch').textContent=saved?'✓ Added to watchlist':'♡ Watchlist';$('saveWatch').onclick=()=>{w=read(SAVED);if(w[item.id])delete w[item.id];else w[item.id]=true;write(SAVED,w);watchButton();toast(w[item.id]?'Added to watchlist':'Removed from watchlist')}}
 function sources(){if(item.type==='tv'){let e=allEpisodes(item)[ep];return e?.sources||(e?.src?[{name:'Episode source',src:e.src,enabled:true}]:[])}return item.sources||(item.stream?[{name:'Demo HLS',src:item.stream,type:'hls',enabled:true}]:[])}
-function openPlayer(id,index){item=data.find(x=>x.id===id);if(!item)return;ep=Math.max(0,Math.min(index||0,(allEpisodes(item).length||1)-1));server=0;lastSaveSecond=-1;go('player');$('playerCrumb').textContent=item.title;renderServers();renderEpisodes();load(true)}
+function availableSources(){let a=sources();return selectedAudioLanguage==='auto'?a:a.filter(x=>(x.audio_language||'und')===selectedAudioLanguage)}
+function renderAudioOptions(){const sel=$('audioTrack'),a=sources(),map=new Map();a.forEach(x=>{let code=x.audio_language||'und';let names={en:'English',hi:'Hindi',ja:'Japanese',ko:'Korean',es:'Spanish',fr:'French',de:'German'};map.set(code,{code,label:x.audio_label||names[code]||(code==='und'?'Default / Unspecified':'Other ('+code+')')})});let langs=[...map.values()];sel.innerHTML='';if(langs.length<=1){sel.innerHTML='<option value="auto">Audio: '+(langs[0]?.label||'Auto')+'</option>';sel.disabled=true;selectedAudioLanguage='auto';return}sel.disabled=false;langs.forEach(x=>{let o=document.createElement('option');o.value='lang:'+x.code;o.textContent=x.label;sel.appendChild(o)});if(selectedAudioLanguage==='auto'||!langs.some(x=>x.code===selectedAudioLanguage))selectedAudioLanguage=langs[0].code;sel.value='lang:'+selectedAudioLanguage}
+function renderEmbeddedAudio(){if(!hls?.audioTracks?.length)return;const sel=$('audioTrack');if(![...sel.options].some(o=>o.value.startsWith('lang:')))renderAudioOptions();const external=[...sel.options].filter(o=>o.value.startsWith('lang:'));sel.innerHTML='';external.forEach(o=>sel.appendChild(o));hls.audioTracks.forEach((t,i)=>{let o=document.createElement('option');o.value='hls:'+i;o.textContent='Embedded: '+(t.name||t.lang||('Track '+(i+1)));sel.appendChild(o)});sel.disabled=false;if(external.length)sel.value='lang:'+selectedAudioLanguage;else sel.value='hls:'+hls.audioTrack}
+
+function openPlayer(id,index){item=data.find(x=>x.id===id);if(!item)return;ep=Math.max(0,Math.min(index||0,(allEpisodes(item).length||1)-1));server=0;selectedAudioLanguage='auto';lastSaveSecond=-1;go('player');$('playerCrumb').textContent=item.title;renderAudioOptions();renderServers();renderEpisodes();load(true)}
 function resume(id,index){let x=data.find(d=>d.id===id);if(x&&(x.stream||x.seasons?.some(s=>s.length)))openPlayer(id,index);else detail(id)}
-function renderServers(){let a=sources();$('servers').innerHTML=a.length?a.map((s,i)=>`<button class="server ${server===i?'active':''}" ${s.enabled===false?'disabled':''} onclick="chooseServer(${i})">${esc(s.name||'Server '+(i+1))}</button>`).join(''):'<div class="empty">No authorised source configured for this title.</div>'}
+function renderServers(){let a=availableSources();$('servers').innerHTML=a.length?a.map((s,i)=>`<button class="server ${server===i?'active':''}" ${s.enabled===false?'disabled':''} onclick="chooseServer(${i})">${esc(s.name||'Server '+(i+1))}</button>`).join(''):'<div class="empty">No authorised source configured for this title.</div>'}
 function renderEpisodes(){let eps=allEpisodes(item),isTV=item.type==='tv'&&eps.length>0;$('episodeControls').hidden=!isTV;$('playerNav').hidden=!isTV;$('playerPrev').disabled=!isTV||ep===0;$('playerNext').disabled=!isTV||ep===eps.length-1;let select=$('episodeSelect');if(isTV){$('episodes').innerHTML=eps.map((e,i)=>`<button class="episode-card ${i===ep?'active':''}" onclick="episode(${i})"><span class="episode-num">${i+1}</span><span><b>Episode ${i+1}: ${esc(e.title)}</b><small>Season ${season+1} · Episode ${i+1}</small></span></button>`).join('');select.innerHTML=eps.map((e,i)=>`<option value="${i}">Episode ${i+1}</option>`).join('');select.value=String(ep);$('prevEpisode').disabled=ep===0;$('nextEpisode').disabled=ep===eps.length-1}else{$('episodes').innerHTML='<div class="muted">Movie playback</div>';select.innerHTML=''}}
 function resetCaptions(){let c=$('captions');c.innerHTML='<option value="off">Captions off</option>';c.disabled=true}
+function resetAudio(){const a=$('audioTrack');a.innerHTML='<option value="auto">Audio: Auto</option>';a.disabled=true}
+async function loadExternalSubtitles(sourceId){document.querySelectorAll('track[data-external-subtitle]').forEach(t=>t.remove());if(!sourceId)return;try{const q=new URLSearchParams({select:'id,language_code,language_label,subtitle_url,is_default,priority',stream_source_id:'eq.'+sourceId,enabled:'eq.true',order:'priority.asc'});const r=await fetch(SUPABASE_URL+'/rest/v1/stream_subtitles?'+q.toString(),{headers:{apikey:SUPABASE_PUBLISHABLE_KEY,Accept:'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);const rows=await r.json();rows.forEach(row=>{if(!/^https:\/\//i.test(row.subtitle_url||''))return;const t=document.createElement('track');t.dataset.externalSubtitle='true';t.kind='subtitles';t.src=row.subtitle_url;t.srclang=row.language_code||'und';t.label=row.language_label||row.language_code||'Subtitle';if(row.is_default)t.default=true;t.addEventListener('load',captions);video.appendChild(t)});captions()}catch(e){console.warn('Subtitle tracks could not be loaded:',e.message)}}
+
 function captions(){
  const c=$('captions'),old=c.value;let options=[{value:'off',label:'Captions off'}];
  if(hls?.subtitleTracks?.length)hls.subtitleTracks.forEach((t,i)=>options.push({value:'hls:'+i,label:t.name||t.lang||('Subtitle '+(i+1))}));
@@ -215,27 +222,28 @@ function captions(){
  c.innerHTML=options.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');c.disabled=options.length===1;
  if(options.some(o=>o.value===old))c.value=old;
 }
-function destroy(){clearTimeout(hideTimer);$('playerShell').classList.remove('controls-hidden');if(hls){hls.destroy();hls=null}video.pause();video.removeAttribute('src');video.load();$('quality').innerHTML='<option value="-1">Auto quality</option>';resetCaptions()}
-function currentSrc(){return sources()[server]?.src}
+function destroy(){clearTimeout(hideTimer);$('playerShell').classList.remove('controls-hidden');if(hls){hls.destroy();hls=null}video.pause();document.querySelectorAll('track[data-external-subtitle]').forEach(t=>t.remove());video.removeAttribute('src');video.load();$('quality').innerHTML='<option value="-1">Auto quality</option>';resetCaptions();resetAudio()}
+function currentSrc(){return availableSources()[server]?.src}
 function load(shouldResume){
 destroy();let src=currentSrc();if(!src){$('playerInfo').textContent='No authorised video source is configured for this title.';return}
 if(!/^https:\/\//i.test(src)){$('playerInfo').textContent='Video source must use HTTPS.';return}
 $('playerTitle').textContent=item.title+(item.type==='tv'?' · Episode '+(ep+1):'');$('playerInfo').textContent='Connecting to video source…';let saved=read(PROGRESS)[item.id];
 function ready(){if(shouldResume&&saved&&saved.time>5&&(!saved.ep||saved.ep===ep)){try{video.currentTime=saved.time}catch(e){}}video.play().then(()=>showPlayerUI()).catch(()=>{updatePlay();showPlayerUI()})}
-const selectedSource=sources()[server]||{};
+const selectedSource=availableSources()[server]||{};loadExternalSubtitles(selectedSource.id);
 const isMp4=selectedSource.type==='mp4'||/\.mp4(?:$|[?#])/i.test(src);
 if(isMp4){video.src=src;video.addEventListener('loadedmetadata',function once(){video.removeEventListener('loadedmetadata',once);$('playerInfo').textContent='MP4 ready';ready()});video.addEventListener('error',()=>{$('playerInfo').textContent='The MP4 source could not be played. Check the source URL and hosting permissions.'},{once:true})}
 else if(window.Hls&&Hls.isSupported()){
  hls=new Hls({capLevelToPlayerSize:true});hls.loadSource(src);hls.attachMedia(video);
- hls.on(Hls.Events.MANIFEST_PARSED,(_,d)=>{(d.levels||[]).forEach((l,i)=>{let o=document.createElement('option');o.value=i;o.textContent=(l.height||'?')+'p';$('quality').appendChild(o)});$('playerInfo').textContent='HLS ready · '+(d.levels||[]).length+' quality levels';captions();ready()});
- hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,captions);
+ hls.on(Hls.Events.MANIFEST_PARSED,(_,d)=>{renderEmbeddedAudio();(d.levels||[]).forEach((l,i)=>{let o=document.createElement('option');o.value=i;o.textContent=(l.height||'?')+'p';$('quality').appendChild(o)});$('playerInfo').textContent='HLS ready · '+(d.levels||[]).length+' quality levels';captions();ready()});
+ hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED,captions);hls.on(Hls.Events.AUDIO_TRACKS_UPDATED,renderEmbeddedAudio);
  hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal){$('playerInfo').textContent='This stream failed. Try another configured source or check your connection.';toast('Stream error')}})
 }
 else if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=src;video.addEventListener('loadedmetadata',function once(){video.removeEventListener('loadedmetadata',once);$('playerInfo').textContent='Native HLS playback · quality managed by browser';captions();ready()})}
 else $('playerInfo').textContent='This browser cannot play HLS. Use a browser with HLS.js support.';
 }
-function chooseServer(i){if(!sources()[i]||sources()[i].enabled===false)return;server=i;renderServers();load(false)}
-function episode(i){let eps=allEpisodes(item);if(!eps.length||i===ep||i<0||i>=eps.length)return;save(false);ep=i;lastSaveSecond=-1;renderEpisodes();load(false)}
+function chooseServer(i){if(!availableSources()[i]||availableSources()[i].enabled===false)return;server=i;renderServers();load(false)}
+$('audioTrack').addEventListener('change',e=>{const v=e.target.value;if(v.startsWith('hls:')&&hls){hls.audioTrack=Number(v.split(':')[1]);return}if(v.startsWith('lang:')){selectedAudioLanguage=v.slice(5);server=0;renderServers();load(false)}showPlayerUI()});
+function episode(i){let eps=allEpisodes(item);if(!eps.length||i===ep||i<0||i>=eps.length)return;save(false);ep=i;server=0;selectedAudioLanguage='auto';lastSaveSecond=-1;renderEpisodes();renderAudioOptions();renderServers();load(false)}
 function fmt(s){if(!Number.isFinite(s))return'0:00';let h=Math.floor(s/3600),m=Math.floor(s%3600/60),z=Math.floor(s%60);return h?`${h}:${String(m).padStart(2,'0')}:${String(z).padStart(2,'0')}`:`${m}:${String(z).padStart(2,'0')}`}
 function addHistory(){if(!item||!Number.isFinite(video.currentTime)||video.currentTime<2)return;let h=read(HISTORY);h[item.id]={id:item.id,ep,season,time:video.currentTime,duration:Number.isFinite(video.duration)?video.duration:0,updated:Date.now()};write(HISTORY,h)}
 function save(render=true){if(!item||!video.duration||!Number.isFinite(video.currentTime))return;addHistory();let p=read(PROGRESS);if(video.currentTime>video.duration-5)delete p[item.id];else if(video.currentTime>2)p[item.id]={time:video.currentTime,duration:video.duration,ep,season,updated:Date.now()};write(PROGRESS,p);if(render){home();if($('history').classList.contains('active'))renderHistory()}}
@@ -288,7 +296,7 @@ const IMAGE_BASE='https://image.tmdb.org/t/p/';
 
 async function getAuthorisedSources(filters){
  const params=new URLSearchParams({
-  select:'id,tmdb_id,media_type,season_number,episode_number,provider,source_name,stream_url,stream_type,enabled,priority',
+  select:'id,tmdb_id,media_type,season_number,episode_number,provider,source_name,stream_url,stream_type,enabled,priority,audio_language,audio_label',
   tmdb_id:'eq.'+String(filters.tmdbId),
   media_type:'eq.'+filters.mediaType,
   enabled:'eq.true',
@@ -311,8 +319,8 @@ async function getAuthorisedSources(filters){
  const rows=await response.json();
  if(!Array.isArray(rows))throw new Error('Supabase returned an unexpected response.');
  return rows.filter(row=>row.enabled===true&&/^https:\/\//i.test(row.stream_url||'')).map(row=>({
-  name:row.source_name||row.provider||'Authorised source',
-  provider:row.provider||'',src:row.stream_url,type:row.stream_type||'hls',enabled:true,
+  id:row.id,name:row.source_name||row.provider||'Authorised source',
+  provider:row.provider||'',src:row.stream_url,type:row.stream_type||'hls',enabled:true,audio_language:row.audio_language||null,audio_label:row.audio_label||null,
   episodeNumber:row.episode_number===null?null:Number(row.episode_number),priority:Number(row.priority)||1
  }));
 }
@@ -669,8 +677,8 @@ function renderGenres(){
  const selected=genres.find(genre=>String(genre[0])===activeGenreId);
  byId('genreHeading').textContent=selected?selected[1]+' '+(type==='tv'?'TV Shows':'Movies'):'Popular '+(type==='tv'?'TV Shows':'Movies');
  loadGenreResults();
-}
-async function loadGenreResults(){
+ }
+ async function loadGenreResults(){
  const type=activeGenreType;
  const year=byId('genreYear').value||'all';
  const sort=byId('genreSort').value||'new';
